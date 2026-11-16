@@ -37,6 +37,8 @@ export default {
   description: 'Allow or deny MControlProgram approval requests from Hermes Desktop.',
   register(ctx) {
     const prefs = atom({ ...DEFAULTS, ...ctx.storage.get('prefs', {}) })
+    // first run: persist, so values a local install was seeded with (DEFAULTS edited in its plugin.js) survive updates
+    if (!ctx.storage.get('prefs', null)) ctx.storage.set('prefs', prefs.get())
     // status: 'setup' (no key) | 'ok' | 'error'
     const state = atom({ status: 'setup', error: '', pending: [], recent: [], channel: '', busy: {} })
     const patchState = p => state.set({ ...state.get(), ...p })
