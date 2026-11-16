@@ -1,8 +1,7 @@
 /**
- * IO Tower: answer MControlProgram approval requests from inside Hermes Desktop.
+ * Control Tower: answer MControlProgram approval requests from inside Hermes Desktop.
  *
- * In Tron the I/O Tower is where programs talk to their Users; here agents' gated tool calls
- * (SSH commands, URLs, MCP tools held for "ask") reach you without leaving Hermes.
+ * Agents' gated tool calls (SSH commands, URLs, MCP tools held for "ask") reach you without leaving Hermes.
  *
  * Polls MControlProgram's API-key API (`/api/v1/approvals`) with a key that has the `approvals`
  * permission; MControlProgram's Settings → Approval channel must be "API keys".
@@ -15,8 +14,8 @@ import {
 } from '@hermes/plugin-sdk'
 import { jsx, jsxs } from 'react/jsx-runtime'
 
-const ID = 'io-tower'
-const PAGE = '/io-tower'
+const ID = 'control-tower'
+const PAGE = '/control-tower'
 const DEFAULTS = { url: 'http://127.0.0.1:7700', key: '', pollSec: 5, notify: true }
 
 // ---- helpers ----
@@ -34,7 +33,7 @@ const describe = a => `${a.summary || a.tool} — ${a.principal}`
 
 export default {
   id: ID,
-  name: 'IO Tower',
+  name: 'Control Tower',
   description: 'Allow or deny MControlProgram approval requests from Hermes Desktop.',
   register(ctx) {
     const prefs = atom({ ...DEFAULTS, ...ctx.storage.get('prefs', {}) })
@@ -79,7 +78,7 @@ export default {
     async function decide(id, decision) {
       patchState({ busy: { ...state.get().busy, [id]: true } })
       try { await call(`/approvals/${encodeURIComponent(id)}/${decision}`, 'POST') }
-      catch (e) { host.notifyError(e, 'IO Tower: could not send the decision') }
+      catch (e) { host.notifyError(e, 'Control Tower: could not send the decision') }
       finally {
         const { [id]: _, ...busy } = state.get().busy
         patchState({ busy })
@@ -144,7 +143,7 @@ export default {
           jsxs('div', {
             className: 'flex items-center gap-2',
             children: [
-              jsx('div', { className: 'text-base font-medium', children: 'IO Tower' }),
+              jsx('div', { className: 'text-base font-medium', children: 'Control Tower' }),
               jsx(StatusDot, { tone: s.status === 'ok' ? 'good' : s.status === 'error' ? 'bad' : 'muted' }),
               jsx('div', { className: `flex-1 truncate text-xs ${muted}`, children: s.status === 'error' ? s.error : url }),
               toSettings
@@ -176,12 +175,12 @@ export default {
       if (s.status === 'setup') return null
       const n = s.pending.length
       return jsx(Tip, {
-        label: s.status === 'error' ? `IO Tower: ${s.error}` : n ? `${n} MControlProgram approval${n > 1 ? 's' : ''} waiting` : 'No MControlProgram approvals waiting',
+        label: s.status === 'error' ? `Control Tower: ${s.error}` : n ? `${n} MControlProgram approval${n > 1 ? 's' : ''} waiting` : 'No MControlProgram approvals waiting',
         children: jsxs('button', {
           type: 'button',
           className: `inline-flex h-full items-center gap-1 px-1.5 text-[0.6875rem] ${n ? 'text-(--ui-text-primary)' : muted}`,
           onClick: () => host.navigate(PAGE),
-          children: [jsx(StatusDot, { tone: s.status === 'error' ? 'bad' : n ? 'warn' : 'good' }), n ? `${n} to approve` : 'IO']
+          children: [jsx(StatusDot, { tone: s.status === 'error' ? 'bad' : n ? 'warn' : 'good' }), n ? `${n} to approve` : 'Approvals']
         })
       })
     }
@@ -219,7 +218,7 @@ export default {
               size: 'sm', variant: 'secondary',
               onClick: async () => {
                 try { const me = await call('/me'); host.notify({ kind: 'info', message: `Connected as API key "${me.name}" (approval channel: ${me.approvalChannel})` }) }
-                catch (e) { host.notifyError(e, 'IO Tower: connection failed') }
+                catch (e) { host.notifyError(e, 'Control Tower: connection failed') }
                 await poll()
               },
               children: 'Test connection'
@@ -233,8 +232,8 @@ export default {
       { id: 'page', area: ROUTES_AREA, data: { path: PAGE }, render: () => jsx(Page, {}) },
       { id: 'nav', area: SIDEBAR_NAV_AREA, data: { path: PAGE, label: 'Approvals', codicon: 'shield' } },
       { id: 'chip', area: STATUSBAR_AREAS.right, order: 125, render: () => jsx(Chip, {}) },
-      { id: 'open', area: PALETTE_AREA, data: { id: 'open', label: 'IO Tower: Show MControlProgram approvals', keywords: ['approve', 'deny', 'mcontrolprogram'], run: () => host.navigate(PAGE) } }
+      { id: 'open', area: PALETTE_AREA, data: { id: 'open', label: 'Control Tower: Show MControlProgram approvals', keywords: ['approve', 'deny', 'mcontrolprogram'], run: () => host.navigate(PAGE) } }
     ])
-    ctx.registerSettingsPage?.({ id: 'settings', title: 'IO Tower', icon: 'shield', render: () => jsx(Settings, {}) })
+    ctx.registerSettingsPage?.({ id: 'settings', title: 'Control Tower', icon: 'shield', render: () => jsx(Settings, {}) })
   }
 }

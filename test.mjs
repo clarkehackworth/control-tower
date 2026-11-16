@@ -39,7 +39,7 @@ const ctx = {
 const tick = () => new Promise(r => setTimeout(r, 100))
 try {
   plugin.register(ctx)
-  assert.equal(plugin.id, 'io-tower')
+  assert.equal(plugin.id, 'control-tower')
   assert.deepEqual(regs.map(r => r.id), ['page', 'nav', 'chip', 'open', 'settings'])
   await tick()
   assert.equal(notes.length, 0, 'asks already waiting at startup do not notify')
